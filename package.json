@@ -1,0 +1,33 @@
+{
+  "name": "gatsby-plugin-pdf",
+  "version": "0.0.1",
+  "license": "MIT",
+  "main": "index.js",
+  "repository": "https://github.com/lundegaard/gatsby-plugin-pdf",
+  "contributors": [
+    "Jakub Kohout <jakub.kohout@lundegaard.eu>"
+  ],
+  "description": "HTML to PDF generator",
+  "engines": {
+    "node": ">=10.18"
+  },
+  "keywords": [
+    "pdf",
+    "gatsby",
+    "gatsby-plugin",
+    "gatsby-plugin-pdf"
+  ],
+  "devDependencies": {
+    "@babel/cli": "^7.12.1",
+    "@babel/core": "^7.12.3",
+    "@babel/preset-env": "^7.12.1"
+  },
+  "dependencies": {
+    "fs-extra": "^9.0.1",
+    "puppeteer": "^5.4.1"
+  },
+  "scripts": {
+    "build": "babel src --out-dir . --ignore **/*.test.js --root-mode upward",
+    "start": "babel -w src --out-dir . --ignore **/*.test.js --root-mode upward"
+  }
+}
