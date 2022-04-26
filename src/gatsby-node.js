@@ -58,7 +58,7 @@ exports.onPostBuild = async (options, { allPages = false, paths = [], ...restPro
 		.map(({ path }) => path)
 		.filter((path) => path !== undefined && path !== DEV_PAGE && !fileRegexp.test(path));
 
-	if (allPages) {
+	if (allPages && allPages.toLowerCase() !== 'false') {
 		const promisses = pageNodes.map((pagePath) => generatePdf({ pagePath, ...restProps }));
 		await Promise.all(promisses);
 	} else {
