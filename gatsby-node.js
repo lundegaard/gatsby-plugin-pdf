@@ -2,6 +2,8 @@
 
 var _puppeteer = _interopRequireDefault(require("puppeteer"));
 
+var _express = _interopRequireDefault(require("express"));
+
 var _fsExtra = _interopRequireDefault(require("fs-extra"));
 
 var _path = _interopRequireDefault(require("path"));
@@ -18,6 +20,23 @@ const normalizePageName = (pagePath = '') => {
   return pageName;
 };
 
+async function runWithWebServer(body) {
+  return new Promise((resolve, reject) => {
+    const app = (0, _express.default)();
+    app.use(_express.default.static(_path.default.join(process.cwd(), 'public')));
+    const server = app.listen(0, async () => {
+      try {
+        await body("http://localhost:" + server.address().port);
+        server.close();
+        resolve();
+      } catch (err) {
+        server.close();
+        reject(err);
+      }
+    });
+  });
+}
+
 const generatePdf = async ({
   pagePath,
   outputPath = 'public/exports',
@@ -25,34 +44,32 @@ const generatePdf = async ({
   pdfOptions = {},
   styleTagOptions
 }) => {
-  const currentDir = process.cwd();
-  const browser = await _puppeteer.default.launch({
-    headless: true
+  await runWithWebServer(async base => {
+    const currentDir = process.cwd();
+    const browser = await _puppeteer.default.launch();
+    const page = await browser.newPage();
+
+    const downloadDir = _path.default.join(currentDir, outputPath);
+
+    if (!_fsExtra.default.existsSync(downloadDir)) {
+      _fsExtra.default.mkdirSync(downloadDir);
+    }
+
+    await page.goto(base + pagePath, {
+      waitUntil: 'networkidle0'
+    });
+
+    if (styleTagOptions) {
+      await page.addStyleTag(styleTagOptions);
+    }
+
+    await page.pdf({
+      format: 'A4',
+      path: _path.default.join(downloadDir, `${filePrefix ? filePrefix : ''}${normalizePageName(pagePath)}.pdf`),
+      ...pdfOptions
+    });
+    await browser.close();
   });
-  const page = await browser.newPage();
-
-  const htmlPath = _path.default.join(currentDir, 'public', pagePath, 'index.html');
-
-  const downloadDir = _path.default.join(currentDir, outputPath);
-
-  if (!_fsExtra.default.existsSync(downloadDir)) {
-    _fsExtra.default.mkdirSync(downloadDir);
-  }
-
-  const contentHtml = _fsExtra.default.readFileSync(htmlPath, 'utf8');
-
-  await page.setContent(contentHtml);
-
-  if (styleTagOptions) {
-    await page.addStyleTag(styleTagOptions);
-  }
-
-  await page.pdf({
-    format: 'A4',
-    path: _path.default.join(downloadDir, `${filePrefix ? filePrefix : ''}${normalizePageName(pagePath)}.pdf`),
-    ...pdfOptions
-  });
-  await browser.close();
 };
 
 exports.onPostBuild = async (options, {
