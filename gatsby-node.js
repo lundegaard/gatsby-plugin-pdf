@@ -23,10 +23,12 @@ const generatePdf = async ({
   outputPath = 'public/exports',
   filePrefix,
   pdfOptions = {},
-  styleTagOptions
+  styleTagOptions,
+  browserPath
 }) => {
   const currentDir = process.cwd();
   const browser = await _puppeteer.default.launch({
+    executablePath: browserPath,
     headless: true
   });
   const page = await browser.newPage();
@@ -98,6 +100,7 @@ exports.pluginOptionsSchema = ({
       url: Joi.string().description(`URL of the <link> tag`),
       path: Joi.string().description(`Path to the CSS file to be injected into frame. If path is a relative path, then it is resolved relative to current working directory.`),
       content: Joi.string().description(`Raw CSS content to be injected into frame.`)
-    }).description(`See addStyleTag puppeteer options: https://github.com/puppeteer/puppeteer/blob/v5.5.0/docs/api.md#pageaddstyletagoptions.`)
+    }).description(`See addStyleTag puppeteer options: https://github.com/puppeteer/puppeteer/blob/v5.5.0/docs/api.md#pageaddstyletagoptions.`),
+    browserPath: Joi.string().description(`Optional path to preferred browser.`)
   });
 };
