@@ -21,10 +21,14 @@ const generatePdf = async ({
 	outputPath = 'public/exports',
 	filePrefix,
 	pdfOptions = {},
-	styleTagOptions,
+    styleTagOptions,
+    browserPath,
 }) => {
 	const currentDir = process.cwd();
-	const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({
+      executablePath: browserPath,
+      headless: true,
+    });
 	const page = await browser.newPage();
 	const htmlPath = path.join(currentDir, 'public', pagePath, 'index.html');
 	const downloadDir = path.join(currentDir, outputPath);
@@ -102,5 +106,6 @@ exports.pluginOptionsSchema = ({ Joi }) => {
 		}).description(
 			`See addStyleTag puppeteer options: https://github.com/puppeteer/puppeteer/blob/v5.5.0/docs/api.md#pageaddstyletagoptions.`
 		),
+        browserPath: Joi.string().description(`Optional path to preferred browser.`),
 	});
 };
